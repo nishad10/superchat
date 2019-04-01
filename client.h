@@ -3,10 +3,17 @@
 #include <vector>
 using namespace std
 
-class Client
+class client
 {
+    
+    private:
+        string nickname;
+        string IP_address;
+        vector<Client> ignore_users;
+        int port;
+    
     public:
-        Client(string _nickname, string _IP_address, int _port);
+        client(string _nickname, string _IP_address, int _port);
         virtual ~client();
         void get_nickname();
         void set_nickname(string _nickname);
@@ -22,13 +29,6 @@ class Client
         void leave();
         void log();
 
-    protected:
-
-    private:
-        string nickname;
-        string IP_address;
-        vector<Client> ignore_users;
-        int port;
 };
 
 #endif // CLIENT_H
