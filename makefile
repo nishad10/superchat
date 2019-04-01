@@ -4,11 +4,11 @@ CXXFLAGS=-WAll -O0 -g -std=c++11
 
 all:
 
-server.o: server.cpp spellCHeck.h chatroom.h message.h
+client.o: client.cpp spellCHeck.h message.h
 
 server: server.o
-    ${CXX} -o server server.o -lpthread
+    ${CXX} -o client client.o -lpthread
     
 clean:
-    -rm -fr server server.o spellCheck.o chatroom.o message.o
+    -rm -fr server client.o spellCheck.o message.o
     
