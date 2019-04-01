@@ -32,3 +32,5 @@ public:
 
 	void check_name(string client_name);
 }
+
+#endif
