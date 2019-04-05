@@ -5,8 +5,8 @@
 #include <string>
 #include <fstream>
 #include<sstream>
-#include "Client.h"
-#include "Message.h"
+#include "client.h"
+#include "message.h"
 #ifndef chatroom_H
 #define chatroom_H
 
