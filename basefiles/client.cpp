@@ -1,5 +1,4 @@
 #include "client.h"
-
 client::client(string _nickname, string _IP_address, int _port)
 {
 nickname = _nickname;
@@ -50,3 +49,7 @@ client::~client()
 {
     //dtor
 }
+
+int main()
+{
+return 0;}

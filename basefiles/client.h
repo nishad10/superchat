@@ -2,6 +2,12 @@
 #define CLIENT_H
 #include <vector>
 #include <string>
+#include <cstdlib>
+#include <deque>
+#include <iostream>
+#include <thread>
+#include "asio.hpp"
+#include "message.h"
 using namespace std;
 
 class client
