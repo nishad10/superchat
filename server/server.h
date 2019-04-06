@@ -1,6 +1,14 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 #include <string>
+#include <cstdlib>
+#include <deque>
+#include <iostream>
+#include <list>
+#include <memory>
+#include <set>
+#include <utility>
+#include "asio.hpp"
 #include "clientNew.h"
 #include "chatroom.h"
 using namespace std;
