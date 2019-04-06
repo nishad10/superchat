@@ -1,36 +1,39 @@
 #ifndef SERVER_H_
 #define SERVER_H_
-
-class server()
+#include <string>
+#include "clientNew.h"
+#include "chatroom.h"
+using namespace std;
+class server
 {
 	
 private:
 	int chatroom_size, number_of_clients;
 public:
-	Server()
-	~Server()
-	std::vector<Client> list_of_client;
-	std::vector<Chatroom> list_of_chatroom;
+	server();
+    ~server();
+	std::vector<clientNew> list_of_client;
+	std::vector<chatroom> list_of_chatroom;
 
-	void read_head(struct message_head);
+	void read_head(string message_head);
 
-	void read_body(struct message_body);
+	void read_body(string message_body);
 
-	void add_client(Client client);
+	void add_client(string clientName, int clientPort);
 
-	void disconnect(Client client);
+	void disconnect(string clientName, int clientPort);
 
-	void ban(Client client);
+	void ban(string clientName, int clientPort);
 	
 	void create_chatroom();
 
-	void delete_chatroom(Chatroom chatroom);
+	void delete_chatroom(chatroom chatroom);
 
 	void save_state();
 
 	void change_chatroom(string chatroom_name);
 
 	void check_name(string client_name);
-}
+};
 
 #endif

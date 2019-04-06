@@ -2,25 +2,28 @@
 
 using namespace std;
 
-server:server(){};                                    // no constructor
+int main()
+{
+return 0;}
+server::server(){};                                    // no constructor
 
-  void server::read_head(struct message_head) {
+  void server::read_head(string message_head) {
 		
 	}
 
-	void server::read_body(struct message_body) {
+	void server::read_body(string message_body) {
 
 	}
 
-	void server::add_client(Client client) {
+	void server::add_client(string clientName, int clientPort) {
 
 	}
 
-	void server::disconnect(Client client) {
+	void server::disconnect(string clientName, int clientPort) {
 
 	}
 
-	void server::ban(Client client) {
+	void server::ban(string clientName, int clientPort) {
 
 	}
 
@@ -28,7 +31,7 @@ server:server(){};                                    // no constructor
 
 	}
 
-	void server::delete_chatroom(Chatroom chatroom) {
+	void server::delete_chatroom(chatroom chatroom) {
 
 	}
 

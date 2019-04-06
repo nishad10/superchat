@@ -5,30 +5,31 @@
 #include <string>
 #include <fstream>
 #include<sstream>
-#include "client.h"
+#include "clientNew.h"
 #include "message.h"
+#include "clientNew.h"
 #ifndef chatroom_H
 #define chatroom_H
 
 class chatroom
 {
 	public:
-	chatroom(std:: string name, Bool ispublic, int port);
-	join_chatroom();
-	set_public();
-	record_history(Message myMessage);
+	chatroom(std::string name, bool ispublic, int port);
+	void join_chatroom();
+	void set_public();
+	void record_history(message myMessage);
 	bool get_is_empty(); 
 	bool get_is_lobby();
 	bool get_is_public();
-	set_is_empty(bool is_empty);
-	set_is_lobby(bool Lobby);
-	set_is_public(bool is_public);
+	void set_is_empty(bool is_empty);
+	void set_is_lobby(bool Lobby);
+	void set_is_public(bool is_public);
 	std:: string display_previous(chatroom Chatroom);
-	std:: string get_name();
-	set_name(std::string name);
+	std::string get_name();
+	void set_name(std::string name);
 	int get_port();
 	
-	vector<Client> Client_list;
+	vector<clientNew> Client_list;
 	vector<std::string> message_list;
 	
 	private:
@@ -41,5 +42,5 @@ class chatroom
 
 
 
-}
+};
 #endif

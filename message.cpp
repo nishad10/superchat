@@ -25,7 +25,3 @@ void decrypt(std::string body){
 
 }
 
-int main()
-{
-return 0;
-}
