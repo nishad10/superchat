@@ -2,7 +2,7 @@ CXX=g++
 
 CXXFLAGS=-Wall -O0 -g -std=c++11
 
-CPPFLAGS=~/Documents/asio-1.12.2/include
+CPPFLAGS=-I/Users/shiba/Desktop/asio-1.12.2/include
 
 all:client
 
