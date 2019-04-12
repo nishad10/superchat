@@ -7,6 +7,7 @@
 #include <deque>
 #include <iostream>
 #include <thread>
+#include <boost/bind.hpp>
 #include "asio.hpp"
 #include "message.h"
 
@@ -18,7 +19,7 @@ class client
     private:
         string nickname;
         string IP_address;
-        vector<client> ignore_users;
+        vector<client> ignore_list;
         int port;
     
     public:
@@ -26,9 +27,12 @@ class client
         virtual ~client();
         string get_nickname();
         void set_nickname(string _nickname);
-        void get_IP_address();
-        void set_IP_address(string _IP_address);
+        string get_IP_address();
+	void set_port(int _port);
+	int get_port();
+	void set_IP_address(string _IP_address);
         
+
         void ignore_user();
 
 
