@@ -81,12 +81,10 @@ void client::set_IP_address(std::string _IP_address) {
 void client::ignore_user(std::string nickname){
 	client.ignore_list.pushback(nickname);
 }
-
-
-client::~client() {
-    //dtor
-}
 */
+
+client::~client() {}
+
 int main(int argc, char* argv[])
 {
 	try {

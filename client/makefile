@@ -9,7 +9,7 @@ all: client
 client.o: client.cpp message.hpp
 
 client: client.o message.o
-	${CXX} -o client client.o -lpthread -lncurses -lasio
+	${CXX} -o client client.o -lpthread
 
 clean:
 	-rm -f client client.o message.o
