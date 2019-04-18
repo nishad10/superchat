@@ -2,32 +2,81 @@
 #include <curses.h>
 #include <string>
 #include <bits/stdc++.h>
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <map>
+#include <fstream>
+
 
 using namespace std;
+
+string login ()
+{
+	 char getInput []="Pick a cool name: ";		/* message to be appeared on the screen */
+	 char str[25];
+	 vector <string> Names ;
+	 int row,col;				/* to store the number of rows and *
+						 * the number of colums of the screen */
+	 initscr();				/* start the curses mode */
+			/* get the number of rows and columns */
+	 bool flagInput=true;
+		while(flagInput)
+		{
+			 bool flag= true;
+			getmaxyx(stdscr,row,col);
+			 WINDOW * Outside = newwin(10, 55,(row/2)-5,((col- 20)/2)-5);
+			 refresh();
+			 box(Outside, 0, 0);
+			mvprintw(row/2,(col- 20)/2,"%s",getInput);
+			wrefresh(Outside);
+			getstr(str);
+			//wrefresh(Outside);
+			string name(str);
+				
+			//for (int i=0;i<Names.size();i++)
+			for (auto i: Names)
+			{
+				if (i == name)
+				{
+					mvprintw((row/2)+3,((col- 20)/2),"Sorry! Name already taken");
+					getch();
+					flag=false;
+					wrefresh(Outside);
+					int wclear(WINDOW *Outside);
+					//wrefresh(Outside);
+					//refresh();
+					endwin();
+					break;
+				}
+			}
+			if(flag)
+				{
+					Names.push_back(name);
+					mvprintw((row/2)+3,((col- 20)/2), "Name you chose is: %s", str);
+					getch();
+					wrefresh(Outside);
+					int wclear(WINDOW *Outside);
+					//wrefresh(Outside);
+					//refresh();
+					endwin();
+					flagInput=false;
+					return str;
+				}
+		}
+		//wrefresh(Outside);
+		getch();
+		endwin();
+}
 
 int main(int argc, char** argv){
 
 //initialised the screen
 //sets up memory
+	string name=login();
     initscr();
     cbreak();  //cntrl c exits the program
     int height,width, start_y, start_x;
-    int st_x = 40;
-    int st_y = 20;
-   
-    nickname_label: 
-    WINDOW * nic_win = newwin(3, 40, st_y, st_x);
-    box(nic_win,0,0);
-    refresh();
-    wrefresh(nic_win);
-    move(21,41);
-    printw("nickname:");
-    char nickname[25];
-    getstr(nickname);
-    
-    endwin();
-    wrefresh(nic_win);
-    refresh();
 
     getmaxyx(stdscr,height,width);
     //height = height - 5;
@@ -47,7 +96,7 @@ int main(int argc, char** argv){
     wrefresh(text_Center);
     keypad(win,true);
     string choices[10] = {"Create Chatroom","Block User","Decrypt Message","Delete Message","Attachment","Exit","Chatrooms List","LOBBY","Nick Name:","  Send Message >>"};
-    choices[8] = nickname;
+    choices[8] = name;
     int choice;
     int highlight = 0;
     int i;
@@ -197,9 +246,6 @@ int main(int argc, char** argv){
         return 0;
     }
 
-    if(highlight==8){
-    goto nickname_label;
-    }
     if(highlight == 9){
         sendmessage = 1;
         int message_number =0;
@@ -239,8 +285,7 @@ int main(int argc, char** argv){
 
             message_number++;
             move(6+message_number,21);
-            printw("%s: ",nickname);
-	    for(i=0;i<size;i++){
+            for(i=0;i<size;i++){
                 if(message_number<height-9){
                     printw("%c",message[i]);
                 }
