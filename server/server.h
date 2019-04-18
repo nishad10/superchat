@@ -12,14 +12,19 @@
 #include "clientNew.h"
 #include "chatroom.h"
 using namespace std;
+using asio::ip::tcp;
 class server
 {
 	
 private:
 	int chatroom_size, number_of_clients;
-public:
-	server();
-    ~server();
+    void do_accept();
+    tcp::acceptor acceptor_;
+    
+    
+public
+	server(asio::io_context& io_context,
+      const tcp::endpoint& endpoint);
 	std::vector<clientNew> list_of_client;
 	std::vector<chatroom> list_of_chatroom;
 

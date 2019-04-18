@@ -14,23 +14,23 @@
 class chatroom
 {
 	public:
-	chatroom(std::string name, bool ispublic, int port);
-	void join_chatroom();
-	void set_public();
+	chatroom(std::string name1, bool ispublic1, int port1);
+	void join_chatroom(clientNew cnew);
+	
 	void record_history(message myMessage);
 	bool get_is_empty(); 
 	bool get_is_lobby();
 	bool get_is_public();
-	void set_is_empty(bool is_empty);
-	void set_is_lobby(bool Lobby);
-	void set_is_public(bool is_public);
+	void set_is_empty(bool is_empty1);
+	void set_is_lobby(bool Lobby1);
+	void set_is_public(bool is_public1);
 	std:: string display_previous(chatroom Chatroom);
 	std::string get_name();
-	void set_name(std::string name);
+	void set_name(std::string name1);
 	int get_port();
 	
-	vector<clientNew> Client_list;
-	vector<std::string> message_list;
+	vector<clientNew> clientList;
+	vector<std::string> messageList;
 	
 	private:
 	
@@ -38,7 +38,7 @@ class chatroom
 	bool is_empty;
 	bool Lobby;
 	std:: string name;
-	int port1;
+	int port;
 
 
 

@@ -1,55 +1,68 @@
 #include "client.h"
-client::client(string _nickname, string _IP_address, int _port)
-{
-nickname = _nickname;
-IP_address = _IP_address;
-port = _port;
-}
-void client::get_nickname(){
+#include <cstdlib>
+#include <iostream>
+#include <boost/bind.hpp>
+#include "asio.hpp"
+#include "message.h"
 
-}
-void client::set_nickname(string _nickname){
+using namespace asio::ip::tcp;
 
-}
-void client::get_IP_address(){
-
-}
-void client::set_IP_address(string _IP_address){
-
-}
-void client::create_chatroom(){
-
-}
-void client::delete_chatroom(){
-
-}
-void client::ignore_user(){
-
-}
-void client::create_command_header(){
-
-}
-void client::create_message_header(){
-
-}
-void client::create_file_header(){
-
-}
-void client::join_chatroom(){
-
-}
-void client::leave(){
-
-}
-void client::log(){
-
+client::client(asio::io_context& io_context, const tcp::resolver::results_type& endpoints) : io_context_(io_context), socket_(io_context) {
+	//asio::async_connect(socket_, endpoints, boost::bind(&client::handle_connect, this, asio::placeholders::error));
+	do_connect(endpoints);
 }
 
-client::~client()
-{
+/*void client::handle_connect(const asio::error_code& error) {
+	if(!error) {
+		asio::async_read(socket_, asio::buffer
+	}
+}*/
+
+std::string client::get_nickname() {
+	return client.nickname;
+}
+
+void client::set_nickname(std::string _nickname) {
+	client.nickname = _nickname;
+}
+
+std::string client::get_IP_address() {
+	return client.IP_address;
+}
+
+void client::set_port(int _port) {
+	client.port = _port;
+}
+
+int client::get_port() {
+	return client.port;
+}
+
+void client::set_IP_address(std::string _IP_address) {
+	client.IP_address = _IP_address;
+}
+
+void client::ignore_user(std::string nickname){
+	client.ignore_list.pushback(nickname);
+}
+
+
+client::~client() {
     //dtor
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-return 0;}
+	try {
+		std::cerr << "Usage: chat_client <host> <port>\n");
+		return 1;
+	}
+
+	asio::io_context io_context;
+	tcp::resolver resolver(io_context);
+	tcp::resolver::results_type endpoints = resolver.resolve(argv[1], argv[2]);
+
+	chat_client c(
+
+	return 0;
+}
