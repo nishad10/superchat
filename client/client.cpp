@@ -1,22 +1,58 @@
 #include "client.h"
-#include <cstdlib>
-#include <iostream>
-#include <boost/bind.hpp>
-#include "asio.hpp"
-#include "message.h"
+#include "message.hpp"
 
-using namespace asio::ip::tcp;
+using asio::ip::tcp;
 
 client::client(asio::io_context& io_context, const tcp::resolver::results_type& endpoints) : io_context_(io_context), socket_(io_context) {
-	//asio::async_connect(socket_, endpoints, boost::bind(&client::handle_connect, this, asio::placeholders::error));
 	do_connect(endpoints);
 }
 
-/*void client::handle_connect(const asio::error_code& error) {
-	if(!error) {
-		asio::async_read(socket_, asio::buffer
-	}
-}*/
+void client::do_connect(const tcp::resolver::results_type& endpoints) {
+	asio::async_connect(socket_, endpoints, [this](std::error_code ec, tcp::endpoint) {
+		if(!ec) {
+			//read_header();
+		}
+	});
+}
+
+void client::close() {
+	asio::post(io_context_, [this]() {
+		socket_.close();
+	});
+}
+
+void client::write(const message& msg) {
+    asio::post(io_context_,
+        [this, msg]() {
+          bool write_in_progress = !write_msgs_.empty();
+          write_msgs_.push_back(msg);
+          if (!write_in_progress) {
+            do_write();
+          }
+        });
+}
+
+void client::do_write() {
+    asio::async_write(socket_,
+        asio::buffer(write_msgs_.front().data(),
+          write_msgs_.front().length()),
+        [this](std::error_code ec, std::size_t /*length*/) {
+          if (!ec) {
+            write_msgs_.pop_front();
+            if (!write_msgs_.empty()) {
+              do_write();
+            }
+          }
+          else {
+            socket_.close();
+          }
+        });
+}
+
+/*
+void message::read_header() {
+
+}
 
 std::string client::get_nickname() {
 	return client.nickname;
@@ -50,19 +86,43 @@ void client::ignore_user(std::string nickname){
 client::~client() {
     //dtor
 }
-
+*/
 int main(int argc, char* argv[])
 {
 	try {
-		std::cerr << "Usage: chat_client <host> <port>\n");
-		return 1;
+		if (argc != 3) {
+			std::cerr << "Usage: chat_client <host> <port>\n";
+			return 1;
+		}
+
+		asio::io_context io_context;
+
+		tcp::resolver resolver(io_context);
+		auto endpoints = resolver.resolve(argv[1], argv[2]);
+
+		client c(io_context, endpoints);
+
+		std::thread t([&io_context]() {
+			io_context.run();
+		});
+
+		char line[message::max_length+1];
+
+		while(std::cin.getline(line, message::max_length+1)) {
+			message msg;
+			msg.body_length(std::strlen(line));
+			std::memcpy(msg.body(), line, msg.body_length());
+			c.write(msg);
+		}		
+
+		c.close();
+		t.join();
+
 	}
-
-	asio::io_context io_context;
-	tcp::resolver resolver(io_context);
-	tcp::resolver::results_type endpoints = resolver.resolve(argv[1], argv[2]);
-
-	chat_client c(
+	
+	catch(std::exception& e) {
+		std::cerr << "Exception: " << e.what() << "\n";
+	}
 
 	return 0;
 }

@@ -6,10 +6,10 @@ CPPFLAGS=-I/home/alex/Documents/asio-1.12.2/include
 
 all: client
 
-client.o: client.cpp message.cpp
+client.o: client.cpp message.hpp
 
 client: client.o message.o
-	${CXX} -o client client.o -lpthread -lncurses -lasio
+	${CXX} -o client client.o -lpthread
 
 clean:
 	-rm -f client client.o message.o
