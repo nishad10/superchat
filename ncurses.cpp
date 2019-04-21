@@ -7,14 +7,13 @@
 #include <vector>
 #include <map>
 #include <fstream>
+#include <time.h>
 
 
 using namespace std;
 
-string login ()
+string login (char question[],char Prompt [] )
 {
-	 char getInput []="Pick a cool name: ";		/* message to be appeared on the screen */
-	 char str[25];
 	 vector <string> Names ;
 	 int row,col;				/* to store the number of rows and *
 						 * the number of colums of the screen */
@@ -28,11 +27,11 @@ string login ()
 			 WINDOW * Outside = newwin(10, 55,(row/2)-5,((col- 20)/2)-5);
 			 refresh();
 			 box(Outside, 0, 0);
-			mvprintw(row/2,(col- 20)/2,"%s",getInput);
+			mvprintw(row/2,(col- 20)/2,"%s",question);
 			wrefresh(Outside);
-			getstr(str);
+			getstr(Prompt);
 			//wrefresh(Outside);
-			string name(str);
+			string name(Prompt);
 				
 			//for (int i=0;i<Names.size();i++)
 			for (auto i: Names)
@@ -53,7 +52,7 @@ string login ()
 			if(flag)
 				{
 					Names.push_back(name);
-					mvprintw((row/2)+3,((col- 20)/2), "Name you chose is: %s", str);
+					mvprintw((row/2)+3,((col- 20)/2), "Name you chose is: %s", Prompt);
 					getch();
 					wrefresh(Outside);
 					int wclear(WINDOW *Outside);
@@ -61,7 +60,7 @@ string login ()
 					//refresh();
 					endwin();
 					flagInput=false;
-					return str;
+					return Prompt;
 				}
 		}
 		//wrefresh(Outside);
@@ -73,10 +72,14 @@ int main(int argc, char** argv){
 
 //initialised the screen
 //sets up memory
-	string name=login();
+	char Homepage [] ="Pick a cool name:";
+	char getName[25];
+	string name=login(Homepage,getName);
     initscr();
     cbreak();  //cntrl c exits the program
     int height,width, start_y, start_x;
+	int row,col;
+	getmaxyx(stdscr,row,col);
 
     getmaxyx(stdscr,height,width);
     //height = height - 5;
@@ -109,9 +112,11 @@ int main(int argc, char** argv){
             }
 
             if(i == 0){//create chatroom
+			
                 WINDOW * win1 = newwin(3, 17, 0, 0);
                 box(win1,0,0);
-                refresh();
+				wrefresh(win);
+				refresh();
                 wrefresh(win1);
                 mvwprintw(win, 1, 1, choices[0].c_str());
             }
@@ -245,6 +250,13 @@ int main(int argc, char** argv){
         endwin();
         return 0;
     }
+	if(highlight==0)
+	{
+		char AskChatroomName [] = " Pick a name for your chatroom: ";
+		char ChatroomName[25];
+		string newChatroom=login(AskChatroomName,ChatroomName);
+                
+	}
 
     if(highlight == 9){
         sendmessage = 1;
@@ -260,7 +272,6 @@ int main(int argc, char** argv){
             move(height-2,21);
 
             while(1){
-
                 message[i] = getch();
                 //if()
 
@@ -284,12 +295,16 @@ int main(int argc, char** argv){
             }
 
             message_number++;
-            move(6+message_number,21);
+           // move(6+message_number,21);
+		   //char nameP[15] ;
+		  // nameP=name;
+		  time_t now=time(0);
+		mvprintw(6+message_number,21,"%s(%s):%s",getName,ctime(&now),message);
             for(i=0;i<size;i++){
-                if(message_number<height-9){
-                    printw("%c",message[i]);
-                }
-                else{
+               // if(message_number<height-9){
+                  //  printw("%c",message[i]);
+               // }
+               /* else{
                     werase(text_Center);
                     WINDOW * text_Center = newwin(height-9, width-20, 6, 20);
                     box(text_Center,0,0);
@@ -298,7 +313,7 @@ int main(int argc, char** argv){
                     //move(5+message_number,21);
                     message_number = 0;
                     break;
-                }
+                }*/
             }
 
             refresh();
