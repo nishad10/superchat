@@ -15,7 +15,6 @@
 #include <memory>
 #include <set>
 #include <utility>
-#include <vector>
 #include "asio.hpp"
 #include "chat_message.hpp"
 
@@ -41,11 +40,6 @@ typedef std::shared_ptr<chat_participant> chat_participant_ptr;
 class chat_room
 {
 public:
-char chatroom_id;
-  chat_room(char cid)
-{
-	chatroom_id=cid;
-}
   void join(chat_participant_ptr participant)
   {
     participants_.insert(participant);
@@ -60,7 +54,6 @@ char chatroom_id;
 
   void deliver(const chat_message& msg)
   {
-	//id= msg.data().back();
     recent_msgs_.push_back(msg);
     while (recent_msgs_.size() > max_recent_msgs)
       recent_msgs_.pop_front();
@@ -73,7 +66,6 @@ private:
   std::set<chat_participant_ptr> participants_;
   enum { max_recent_msgs = 100 };
   chat_message_queue recent_msgs_;
-  
 };
 
 //----------------------------------------------------------------------
@@ -133,6 +125,7 @@ private:
         {
           if (!ec)
           {
+	    std::cout << "Message tag: " << read_msg_.body()[read_msg_.body_length() - 1] << std::endl;
             room_.deliver(read_msg_);
             do_read_header();
           }
@@ -177,8 +170,6 @@ private:
 class chat_server
 {
 public:
-  char current_id = '0';
-
   chat_server(asio::io_context& io_context,
       const tcp::endpoint& endpoint)
     : acceptor_(io_context, endpoint)
@@ -194,8 +185,6 @@ private:
         {
           if (!ec)
           {
-	    chat_room room_(current_id);
-	    current_id++;
             std::make_shared<chat_session>(std::move(socket), room_)->start();
           }
 
@@ -204,8 +193,7 @@ private:
   }
 
   tcp::acceptor acceptor_;
-  //chat_room room_;
-  std::vector<chat_room> room_list_;
+  chat_room room_;
 };
 
 //----------------------------------------------------------------------

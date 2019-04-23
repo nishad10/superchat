@@ -22,8 +22,6 @@ typedef std::deque<chat_message> chat_message_queue;
 class chat_client
 {
 public:
-
-char room_id_= '0';
   chat_client(asio::io_context& io_context,
       const tcp::resolver::results_type& endpoints)
     : io_context_(io_context),
@@ -31,8 +29,6 @@ char room_id_= '0';
   {
     do_connect(endpoints);
   }
-
-
 
   void write(const chat_message& msg)
   {
@@ -74,8 +70,8 @@ private:
         {
           if (!ec && read_msg_.decode_header())
           {
-                do_read_body();
-	  }
+            do_read_body();
+          }
           else
           {
             socket_.close();
@@ -89,18 +85,12 @@ private:
         asio::buffer(read_msg_.body(), read_msg_.body_length()),
         [this](std::error_code ec, std::size_t /*length*/)
         {
+	  
           if (!ec)
           {
-		//if(room_id_==read_msg_.body().back)
-		//if(room_id_==&(read_msg_.data())[&(read_msg_.data()).size()-1])
-		if(room_id_==read_msg_.data()[std::strlen(read_msg_.data())-1])
-		{
-		
-		
             std::cout.write(read_msg_.body(), read_msg_.body_length());
             std::cout << "\n";
             do_read_header();
-		}
           }
           else
           {
@@ -135,8 +125,7 @@ private:
   asio::io_context& io_context_;
   tcp::socket socket_;
   chat_message read_msg_;
-  chat_message_queue write_msgs_;	
- 
+  chat_message_queue write_msgs_;
 };
 
 int main(int argc, char* argv[])
@@ -158,12 +147,17 @@ int main(int argc, char* argv[])
     std::thread t([&io_context](){ io_context.run(); });
 
     char line[chat_message::max_body_length + 1];
-    while (std::cin.getline((line+c.room_id_), chat_message::max_body_length + 1))
+    while (std::cin.getline(line, chat_message::max_body_length + 1))
     {
       chat_message msg;
-      //line+=sprintf(line, "%d", c.room_id_);
-      //line[line->size()+1]=c.room_id_;
       msg.body_length(std::strlen(line));
+      line[msg.body_length()] = '0';
+      line[msg.body_length() + 1] = '\0';
+      msg.body_length(std::strlen(line));
+      /*for(int i = msg.body_length(); i >= 0; i--)
+	line[i+1] = line[i];
+      line[0] = '0';*/
+      std::cout << "Message is: " << line << std::endl;
       std::memcpy(msg.body(), line, msg.body_length());
       msg.encode_header();
       c.write(msg);
