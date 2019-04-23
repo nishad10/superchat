@@ -125,7 +125,12 @@ private:
         {
           if (!ec)
           {
-	    std::cout << "Message tag: " << read_msg_.body()[read_msg_.body_length() - 1] << std::endl;
+	    std::cout << "Message tags: " << read_msg_.body()[read_msg_.body_length() - 5] 
+					  << read_msg_.body()[read_msg_.body_length() - 4]
+					  << read_msg_.body()[read_msg_.body_length() - 3]
+					  << read_msg_.body()[read_msg_.body_length() - 2]
+					  << read_msg_.body()[read_msg_.body_length() - 1]
+					  << std::endl;
             room_.deliver(read_msg_);
             do_read_header();
           }

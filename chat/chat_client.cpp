@@ -22,6 +22,8 @@ typedef std::deque<chat_message> chat_message_queue;
 class chat_client
 {
 public:
+  char chatroom_ = '0';
+
   chat_client(asio::io_context& io_context,
       const tcp::resolver::results_type& endpoints)
     : io_context_(io_context),
@@ -85,13 +87,19 @@ private:
         asio::buffer(read_msg_.body(), read_msg_.body_length()),
         [this](std::error_code ec, std::size_t /*length*/)
         {
-	  
-          if (!ec)
-          {
-            std::cout.write(read_msg_.body(), read_msg_.body_length());
-            std::cout << "\n";
-            do_read_header();
-          }
+	  if(read_msg_.body()[read_msg_.body_length() - 5] == this->chatroom_)
+	  {
+            if (!ec)
+            {
+	      //add new null character to message youre reading
+	      //so it doesnt print the message tags
+	      read_msg_.body()[read_msg_.body_length() - 1] = '\0';
+	      //print up to the null character
+              std::cout.write(read_msg_.body(), read_msg_.body_length() - 5);
+              std::cout << "\n";
+              do_read_header();
+            }
+	  }
           else
           {
             socket_.close();
@@ -151,13 +159,17 @@ int main(int argc, char* argv[])
     {
       chat_message msg;
       msg.body_length(std::strlen(line));
-      line[msg.body_length()] = '0';
-      line[msg.body_length() + 1] = '\0';
+
+      //add tags to message
+      //
+      line[msg.body_length()] = c.chatroom_;
+      line[msg.body_length() + 1] = '0';
+      line[msg.body_length() + 2] = '0';
+      line[msg.body_length() + 3] = '0';
+      line[msg.body_length() + 4] = '0';
+      line[msg.body_length() + 5] = '\0';
+      //re calculate msg.body_length()
       msg.body_length(std::strlen(line));
-      /*for(int i = msg.body_length(); i >= 0; i--)
-	line[i+1] = line[i];
-      line[0] = '0';*/
-      std::cout << "Message is: " << line << std::endl;
       std::memcpy(msg.body(), line, msg.body_length());
       msg.encode_header();
       c.write(msg);
