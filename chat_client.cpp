@@ -20,6 +20,7 @@
 #include <bits/stdc++.h>
 
 char nickname[25];
+int uni_message = 8;
 using namespace std;
 using asio::ip::tcp;
 
@@ -96,9 +97,12 @@ private:
           {
             
             read_msg_.body()[read_msg_.body_length() -1] = '\0';
-            std::cout.write(read_msg_.body(), read_msg_.body_length())<< "\n";
+	    printw("%s \n",read_msg_.body());
+            //std::cout.write(read_msg_.body(), read_msg_.body_length());
             
             do_read_header();
+            //
+            uni_message++;
           }
           else
           {
@@ -190,7 +194,7 @@ int main(int argc, char* argv[])
     WINDOW * text_Center = newwin(height-12, width-14, 6, 0);
     box(text_Center,0,0);
     refresh();
-    wrefresh(text_Center);
+    //wrefresh(text_Center);
     keypad(win,true);
     string choices[10] = {"Create Chatroom","Block User","Decrypt Message","Delete Message","Attachment","Exit","Chatrooms List","LOBBY","Nick Name:","  Send Message >>"};
     choices[8] = nickname;
@@ -357,7 +361,7 @@ int main(int argc, char* argv[])
             i = 0;
             size = 0;
 
-            move(8,0);
+            move(uni_message,0);
 
             while(1){
 
@@ -380,8 +384,9 @@ int main(int argc, char* argv[])
 
                 i++;
                 size++;
-                refresh();
+               refresh();
             }
+
 int nickname_length=strlen(nickname);
 for(i=0;i< nickname_length;i++){
 line[i]= nickname[i];
@@ -404,12 +409,18 @@ printw("\n");
       line[0] = '0';*/
       //std::cout << "You sent:" << line << std::endl;
       std::memcpy(msg.body(), line, msg.body_length());
-for(i=0;i<size+10;i++){
-line[i]= '\0';
-}
+//for(i=0;i<size+10;i++){
+//line[i]= '\0';
+//}
       msg.encode_header();
+      //move(uni_message+1,0);
+	
       c.write(msg);
-      printf("\n");
+	//wprintw(text_Center,"\b");
+	//wrefresh(text_Center);
+   //   move(uni_message,0);
+ 
+     // printf("\n");
 
             //message_number++;
             //move(6+message_number,21);
