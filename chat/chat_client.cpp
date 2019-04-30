@@ -22,7 +22,11 @@ typedef std::deque<chat_message> chat_message_queue;
 class chat_client
 {
 public:
-  char chatroom_ = '0';
+  // initialize to a - character, to show you have opened the client
+  // but have not yet logged on and have not entered the lobby
+  char chatroom_ = '-';
+  char username[chat_message::max_body_length + 1];
+  char server_response;
 
   chat_client(asio::io_context& io_context,
       const tcp::resolver::results_type& endpoints)
@@ -49,6 +53,37 @@ public:
   void close()
   {
     asio::post(io_context_, [this]() { socket_.close(); });
+  }
+
+  void log_on()
+  {
+    int i = 1;
+    while(i) {
+      std::cout << "Enter a username: ";
+      std::cin.getline(this->username, chat_message::max_body_length + 1);
+      
+      chat_message msg;
+      msg.body_length(std::strlen(this->username));
+
+      //add tags to message
+      this->username[msg.body_length()] = '0';
+      //tag "-01--" is a log in command
+      this->username[msg.body_length() + 1] = '0';
+      this->username[msg.body_length() + 2] = '1';
+      this->username[msg.body_length() + 3] = '0';
+      this->username[msg.body_length() + 4] = '0';
+      this->username[msg.body_length() + 5] = '\0';
+      //re calculate msg.body_length()
+      msg.body_length(std::strlen(this->username));
+      std::memcpy(msg.body(), this->username, msg.body_length());
+      msg.encode_header();
+      this->write(msg);
+      this->chatroom_ = 'S';
+      if(server_response) {
+	i = 0;
+	this->chatroom_ = '0';
+      }
+    }
   }
 
 private:
@@ -87,18 +122,23 @@ private:
         asio::buffer(read_msg_.body(), read_msg_.body_length()),
         [this](std::error_code ec, std::size_t /*length*/)
         {
-	  if(read_msg_.body()[read_msg_.body_length() - 5] == this->chatroom_)
+	  if(read_msg_.body()[read_msg_.body_length() - 5] == this->chatroom_) {
+	    read_msg_.body()[read_msg_.body_length() - 1] = '\0';
+	    std::cout.write(read_msg_.body(), read_msg_.body_length() -5);
+	    this->server_response = read_msg_.body()[read_msg_.body() - 3];
+	  }
+	  else if(read_msg_.body()[read_msg_.body_length() - 5] == this->chatroom_)
 	  {
-            if (!ec)
-            {
+	    if (!ec)
+	    {
 	      //add new null character to message youre reading
 	      //so it doesnt print the message tags
 	      read_msg_.body()[read_msg_.body_length() - 1] = '\0';
-	      //print up to the null character
-              std::cout.write(read_msg_.body(), read_msg_.body_length() - 5);
-              std::cout << "\n";
-              do_read_header();
-            }
+	      //print up to the new null character
+	      std::cout.write(read_msg_.body(), read_msg_.body_length() - 5);
+	      std::cout << "\n";
+	      do_read_header();
+	    }
 	  }
           else
           {
@@ -150,7 +190,10 @@ int main(int argc, char* argv[])
 
     tcp::resolver resolver(io_context);
     auto endpoints = resolver.resolve(argv[1], argv[2]);
+
     chat_client c(io_context, endpoints);
+
+    c.log_on();
 
     std::thread t([&io_context](){ io_context.run(); });
 
@@ -159,14 +202,21 @@ int main(int argc, char* argv[])
     {
       chat_message msg;
       msg.body_length(std::strlen(line));
-
+      std::string check_message = line;
+      if(check_message == "./logout") {
+	std::cout << "Logging out . . ." << std::endl;
+	break;
+      }
       //add tags to message
-      //
+      //first tag is the room you're in
       line[msg.body_length()] = c.chatroom_;
+      //tags 2-3 are the message types
       line[msg.body_length() + 1] = '0';
       line[msg.body_length() + 2] = '0';
+      //tags 4-5 are the user id's
       line[msg.body_length() + 3] = '0';
       line[msg.body_length() + 4] = '0';
+      //add the null character at the end
       line[msg.body_length() + 5] = '\0';
       //re calculate msg.body_length()
       msg.body_length(std::strlen(line));

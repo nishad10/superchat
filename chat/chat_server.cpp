@@ -15,6 +15,7 @@
 #include <memory>
 #include <set>
 #include <utility>
+#include <vector>
 #include "asio.hpp"
 #include "chat_message.hpp"
 
@@ -75,6 +76,17 @@ class chat_session
     public std::enable_shared_from_this<chat_session>
 {
 public:
+  //created a struct that only contains a char array
+  //so that we may store it in a vector
+
+  std::string user_name;
+  std::vector<std::string> chat_user_names;
+
+  // vector to keep track of what rooms are available
+  std::vector<char> all_rooms;
+  // alway add chatroom 0 (the lobby) to the vector
+  //all_rooms.push_back('0');
+
   chat_session(tcp::socket socket, chat_room& room)
     : socket_(std::move(socket)),
       room_(room)
@@ -131,8 +143,136 @@ private:
 					  << read_msg_.body()[read_msg_.body_length() - 2]
 					  << read_msg_.body()[read_msg_.body_length() - 1]
 					  << std::endl;
-            room_.deliver(read_msg_);
-            do_read_header();
+	    //a standard message will have the tag "_00__" for spots 2 and 3
+	    //if the message has that, send deliver it to the other chat participants
+            if (read_msg_.body()[read_msg_.body_length() - 4] == '0' && read_msg_.body()[read_msg_.body_length() - 3] == '0')
+	    {
+	      room_.deliver(read_msg_);
+              do_read_header();
+	    }
+
+	    //if the message is a log in command
+	    else if (read_msg_.body()[read_msg_.body_length() - 4] == '0' && read_msg_.body()[read_msg_.body_length() - 3] == '1')
+	    {
+	      std::cout << "Log in command!" << std::endl;
+	      read_msg_.body()[read_msg_.body_length() - 5] = '\0';
+	      std::string user_name = read_msg_.body();
+	      int acceptance = 1;
+	      if(chat_user_names.size() == 0) {
+		chat_user_names.push_back(user_name);
+		std::cout << user_name << " New user added!" << std::endl;
+
+		char line[chat_message::max_body_length + 1];
+		line = "User added"+test;
+      
+	        chat_message msg;
+	        msg.body_length(std::strlen(line));
+
+	        //add tags to message
+	        line[msg.body_length()] = 'S';
+	        //tag "-01--" is a log in command
+	        line[msg.body_length() + 1] = '0';
+	        line[msg.body_length() + 2] = '1';
+	        line[msg.body_length() + 3] = '0';
+	        line[msg.body_length() + 4] = '0';
+	        line[msg.body_length() + 5] = '\0';
+	        //re calculate msg.body_length()
+	        msg.body_length(std::strlen(line));
+     	        std::memcpy(msg.body(), line, msg.body_length());
+     	        msg.encode_header();
+                room_.deliver(msg);
+		do_read_header();
+	      }
+	      else if(chat_user_names.size() == 50) {
+		std::cout << "Server is currently full!" << std::endl;
+		char line[chat_message::max_body_length + 1];
+		line = "Login failed, server is full";
+      
+	        chat_message msg;
+	        msg.body_length(std::strlen(line));
+
+	        //add tags to message
+	        line[msg.body_length()] = 'S';
+	        //tag "-R0--" is a "false" server response
+	        line[msg.body_length() + 1] = 'R';
+	        line[msg.body_length() + 2] = '0';
+	        line[msg.body_length() + 3] = '0';
+	        line[msg.body_length() + 4] = '0';
+	        line[msg.body_length() + 5] = '\0';
+	        //re calculate msg.body_length()
+	        msg.body_length(std::strlen(line));
+     	        std::memcpy(msg.body(), line, msg.body_length());
+     	        msg.encode_header();
+                room_.deliver(msg);
+		do_read_header();
+	      }
+	      else {
+  	        for(int i = 0; i < chat_user_names.size(); i++)
+	        {
+		  if(user_name == chat_user_names[i])
+		  {
+		    std::cout << user_name << " Name is taken!" << std::endl;
+		    test = 0;
+		  }
+	          if(test)
+		  {
+		    chat_user_names.push_back(user_name);
+		    std::cout << user_name << " New user added!" << std::endl;
+
+		    char line[chat_message::max_body_length + 1];
+		    line = "Login successful";
+      
+	            chat_message msg;
+	            msg.body_length(std::strlen(line));
+
+	            //add tags to message
+	            line[msg.body_length()] = 'Ss';
+	            //tag "-R1--" is a "true" server response
+	            line[msg.body_length() + 1] = 'R';
+	            line[msg.body_length() + 2] = '1';
+	            line[msg.body_length() + 3] = '0';
+	            line[msg.body_length() + 4] = '0';
+	            line[msg.body_length() + 5] = '\0';
+	            //re calculate msg.body_length()
+	            msg.body_length(std::strlen(line));
+     	            std::memcpy(msg.body(), line, msg.body_length());
+     	            msg.encode_header();
+                    room_.deliver(msg);
+		    do_read_header();
+		  }
+		  else {
+		    char line[chat_message::max_body_length + 1];
+		    line = "Login failed, username already in use";
+      
+	            chat_message msg;
+	            msg.body_length(std::strlen(line));
+
+	            //add tags to message
+	            line[msg.body_length()] = 'S';
+	            //tag "-R0--" is a "false" server response
+	            line[msg.body_length() + 1] = 'R';
+	            line[msg.body_length() + 2] = '0';
+	            line[msg.body_length() + 3] = '0';
+	            line[msg.body_length() + 4] = '0';
+	            line[msg.body_length() + 5] = '\0';
+	            //re calculate msg.body_length()
+	            msg.body_length(std::strlen(line));
+     	            std::memcpy(msg.body(), line, msg.body_length());
+     	            msg.encode_header();
+                    room_.deliver(msg);
+		    do_read_header();
+		  }
+	        }
+              }
+	      //std::cout << user_.name << std::endl;
+              do_read_header();
+	    }
+
+	    else
+            {
+              room_.leave(shared_from_this());
+            }
+
           }
           else
           {
