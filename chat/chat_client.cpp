@@ -147,6 +147,48 @@ private:
         });
   }
 
+void read_server_head()
+  {
+    asio::async_read(socket_,
+        asio::buffer(read_msg_.data(), chat_message::header_length),
+        [this](std::error_code ec, std::size_t /*length*/)
+        {
+          if (!ec && read_msg_.decode_header())
+          {
+            do_read_body();
+          }
+          else
+          {
+            socket_.close();
+          }
+        });
+  }
+
+  void read_server_body()
+  {
+    asio::async_read(socket_,
+        asio::buffer(read_msg_.body(), read_msg_.body_length()),
+        [this](std::error_code ec, std::size_t /*length*/)
+        {
+	  if(read_msg_.body()[read_msg_.body_length() - 5] == this->chatroom_)
+	  {
+	    if (!ec)
+	    {
+	      this->server_response = read_msg_.body()[read_msg_.body_length() - 3];
+	      std::cout << this->server_response;
+	      read_msg_.body()[read_msg_.body_length() - 1] = '\0';
+	      std::cout.write(read_msg_.body(), read_msg_.body_length() - 5);
+	      std::cout << "\n";
+	      do_read_header();
+	    }
+	  }
+          else
+          {
+            socket_.close();
+          }
+        });
+  }
+
   void do_write()
   {
     asio::async_write(socket_,
