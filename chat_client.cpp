@@ -18,7 +18,8 @@
 #include <curses.h>
 #include <string>
 #include <bits/stdc++.h>
-
+ int height,width;
+WINDOW * twin;
 char nickname[25];
 int uni_message = 8;
 using namespace std;
@@ -97,7 +98,15 @@ private:
           {
             
             read_msg_.body()[read_msg_.body_length() -1] = '\0';
-	    printw("%s \n",read_msg_.body());
+		move(uni_message, 0);	    
+		printw("%s \n",read_msg_.body());
+            refresh(); 
+  
+             werase(twin);
+                     twin = newwin(3, width-20, height-3, 20);
+                    box(twin,0,0);
+                    refresh();
+                    wrefresh(twin);
             //std::cout.write(read_msg_.body(), read_msg_.body_length());
             
             do_read_header();
@@ -108,6 +117,7 @@ private:
           {
             socket_.close();
           }
+          move(height-2,25);
         });
   }
 
@@ -162,7 +172,7 @@ int main(int argc, char* argv[])
 
     initscr();
     cbreak();  //cntrl c exits the program
-    int height,width, start_y, start_x;
+    int  start_y, start_x;
     int st_x = 40;
     int st_y = 20;
    
@@ -187,7 +197,7 @@ int main(int argc, char* argv[])
     box(win,0,0);
     refresh();
     wrefresh(win);
-    WINDOW * twin = newwin(3, width-20, height-3, 20);
+    twin = newwin(3, width-20, height-3, 20);
     box(twin,0,0);
     refresh();
     wrefresh(twin);
@@ -196,7 +206,7 @@ int main(int argc, char* argv[])
     refresh();
     //wrefresh(text_Center);
     keypad(win,true);
-    string choices[10] = {"Create Chatroom","Block User","Decrypt Message","Delete Message","Attachment","Exit","Chatrooms List","LOBBY","Nick Name:","  Send Message >>"};
+    string choices[10] = {"Create Chatroom","Block User","Decrypt Message","Delete Message","Attachment","Exit","Chatrooms List","LOBBY","Nick Name:","Send/Receive"};
     choices[8] = nickname;
     int choice;
     int highlight = 0;
@@ -361,10 +371,11 @@ int main(int argc, char* argv[])
             i = 0;
             size = 0;
 
-            move(uni_message,0);
-
+            move(height-2,25);
+            getstr(message);
+            /*
             while(1){
-
+             
                 message[i] = getch();
                 //if()
 
@@ -386,7 +397,11 @@ int main(int argc, char* argv[])
                 size++;
                refresh();
             }
-
+*/
+if(message[0]=='!'){
+goto LOOP;
+}
+size = strlen(message);
 int nickname_length=strlen(nickname);
 for(i=0;i< nickname_length;i++){
 line[i]= nickname[i];
@@ -416,6 +431,12 @@ printw("\n");
       //move(uni_message+1,0);
 	
       c.write(msg);
+for(i=0;i<size;i++){
+message[i]='\0';
+}
+for(i=0;i<size+10;i++){
+line[i]='\0';
+}
 	//wprintw(text_Center,"\b");
 	//wrefresh(text_Center);
    //   move(uni_message,0);
