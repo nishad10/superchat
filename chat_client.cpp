@@ -18,9 +18,14 @@
 #include <curses.h>
 #include <string>
 #include <bits/stdc++.h>
+#include<time.h>
+#include<sstream>
+
  int height,width;
 WINDOW * twin;
 char nickname[25];
+char chatroomName[] = "Lobby";
+char blockUser[25];
 int uni_message = 8;
 using namespace std;
 using asio::ip::tcp;
@@ -152,6 +157,9 @@ private:
 
 int main(int argc, char* argv[])
 {
+	bool flagChatroom=false;
+	
+	
   try
   {
     if (argc != 3)
@@ -159,36 +167,47 @@ int main(int argc, char* argv[])
       std::cerr << "Usage: chat_client <host> <port>\n";
       return 1;
     }
-          asio::io_context io_context;
-
-    tcp::resolver resolver(io_context);
-    auto endpoints = resolver.resolve(argv[1], argv[2]);
-    chat_client c(io_context, endpoints);
-
-    std::thread t([&io_context](){ io_context.run(); });
-
-    char line[chat_message::max_body_length + 1];
-//
-
     initscr();
     cbreak();  //cntrl c exits the program
     int  start_y, start_x;
     int st_x = 40;
     int st_y = 20;
-   
-    nickname_label: 
+	     
+  
+	
     WINDOW * nic_win = newwin(3, 40, st_y, st_x);
     box(nic_win,0,0);
     refresh();
     wrefresh(nic_win);
     move(21,41);
-    printw("nickname:");
+    printw("Enter a Nickname:");
     getstr(nickname);
-    
-    endwin();
-    //wrefresh(nic_win);
+	 endwin();
     refresh();
-
+		
+	asio::io_context io_context;
+   tcp::resolver resolver(io_context);
+   auto endpoints = resolver.resolve(argv[1], argv[2]);
+   chat_client c(io_context, endpoints);
+    std::thread t([&io_context](){ io_context.run(); });
+    char line[chat_message::max_body_length + 1];
+	createChatroom_label:
+	
+	if(flagChatroom)			//keeps from popping create chatroom window after changing nickname
+	{
+	WINDOW * newchat_win = newwin(3, 40, st_y, st_x);
+    box(newchat_win,0,0);
+    refresh();
+    wrefresh(newchat_win);
+    move(21,41);
+    printw("Enter a name for your chatroom:");
+    getstr(chatroomName);
+	endwin();
+	refresh();
+	}
+	
+	//if( flagShowmessage)
+	 
     getmaxyx(stdscr,height,width);
     //height = height - 5;
     start_y = 0;
@@ -201,18 +220,22 @@ int main(int argc, char* argv[])
     box(twin,0,0);
     refresh();
     wrefresh(twin);
+	
     WINDOW * text_Center = newwin(height-12, width-14, 6, 0);
     box(text_Center,0,0);
+	nickname_label:
     refresh();
     //wrefresh(text_Center);
     keypad(win,true);
     string choices[10] = {"Create Chatroom","Block User","Decrypt Message","Delete Message","Attachment","Exit","Chatrooms List","LOBBY","Nick Name:","Send/Receive"};
-    choices[8] = nickname;
+    choices[7]=chatroomName;
+	choices[8] = nickname;
     int choice;
     int highlight = 0;
     int i;
     int sendmessage = 0;
     LOOP:
+	
     while(1){
         for(i=0;i<10;i++){
             if(i == highlight){
@@ -297,7 +320,7 @@ int main(int argc, char* argv[])
 
 
 
-        choice = wgetch(win);
+        choice = wgetch(win);			//reads user selection of menu
         switch(choice){
             case KEY_RIGHT:
                 highlight++;
@@ -351,16 +374,50 @@ int main(int argc, char* argv[])
 
     }
 
+/////////////////////////////Functionality of listed labels...../////////////////////////////////////////////////////////////
 
-    if(highlight==5){
+    if(highlight==5)						//exit
+	{
         endwin();
         return 0;
     }
-
-    if(highlight==8){
-    goto nickname_label;
+	if(highlight==1)						//block useer
+	
+	{
+		WINDOW * blockuser_win = newwin(3, 40, st_y, st_x);
+    box(blockuser_win,0,0);
+    refresh();
+    wrefresh(blockuser_win);
+    move(21,41);
+    printw("Enter the name of the user you'd like to block: ");
+    getstr(blockUser);
+	wrefresh(blockuser_win);
+	werase(blockuser_win);
+	}
+	
+    if(highlight==8)						//rename nicknmae
+	{
+	 WINDOW * nic_win = newwin(3, 40, st_y, st_x);
+    box(nic_win,0,0);
+    refresh();
+    wrefresh(nic_win);
+    move(21,41);
+    printw("Enter a Nickname:");
+    getstr(nickname);
+    wrefresh(nic_win);
+	werase(nic_win);
+	goto nickname_label;
     }
-    if(highlight == 9){
+	
+	if(highlight==0)						//create new chatroom
+	{
+		flagChatroom=true;
+							//keeps from popping create chatroom window after changing nickname
+	goto createChatroom_label;			//create chatroom
+	}
+	
+    if(highlight == 9)					//reads/sends messages
+	{
         sendmessage = 1;
         int message_number =0;
         int size=0;
@@ -378,7 +435,6 @@ int main(int argc, char* argv[])
              
                 message[i] = getch();
                 //if()
-
                 if(message[i] == '\n'){
                     //werase(twin);
                     //WINDOW * twin = newwin(3, width-20, height-3, 20);
@@ -392,7 +448,6 @@ int main(int argc, char* argv[])
                     highlight = 0;
                     goto LOOP;
                 }
-
                 i++;
                 size++;
                refresh();
@@ -401,17 +456,43 @@ int main(int argc, char* argv[])
 if(message[0]=='!'){
 goto LOOP;
 }
+time_t curr_time;
+curr_time = time(NULL);
+tm *tm_local = localtime(&curr_time);
 size = strlen(message);
 int nickname_length=strlen(nickname);
-for(i=0;i< nickname_length;i++){
+
+for(i=0;i< nickname_length;i++)
+{
 line[i]= nickname[i];
 }
-for(i= nickname_length;i<10;i++){
-line[i] =' ';
-}
-
-for(i=10;i<size+10;i++){
-line[i]= message[i-10];
+line[i]='[';
+i++;
+ostringstream ostr;
+ostr << (tm_local->tm_hour);
+string s= "00";
+s = ostr.str();
+line[i]=s[0];
+i++;
+line[i]= s[1];
+i++;
+line[i]= ':';
+i++;
+ostringstream ost;
+ost<< (tm_local->tm_min);
+ s= "00";
+s = ost.str();
+line[i]= s[0];
+i++;
+line[i]= s[1];
+i++;
+line[i]= ']';
+i++;
+line[i] =':';
+i++;
+for(int j=0;j<size;j++,i++)
+{
+line[i]= message[j];
 }
  chat_message msg;
 printw("\n");
@@ -465,14 +546,13 @@ line[i]='\0';
             refresh();
             //printw("\n");
         }
-    }
+  //  }
 
     getch();
-
     endwin();
-
     c.close();
     t.join();
+  }
   }
   catch (std::exception& e)
   {
