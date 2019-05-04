@@ -18,12 +18,17 @@
 #include <curses.h>
 #include <string>
 #include <bits/stdc++.h>
+#include <time.h>
  int height,width;
 WINDOW * twin;
 char nickname[25];
 int uni_message = 8;
+int enc = 0;
 using namespace std;
 using asio::ip::tcp;
+void spellcheck(string message,int width,int height);
+int edit_distance(string first_string, string second_string);
+
 
 typedef std::deque<chat_message> chat_message_queue;
 
@@ -96,10 +101,21 @@ private:
 	  
           if (!ec)
           {
-            
-            read_msg_.body()[read_msg_.body_length() -1] = '\0';
-		move(uni_message, 0);	    
-		printw("%s \n",read_msg_.body());
+            time_t ltime;
+            ltime = time(NULL);
+           read_msg_.body()[read_msg_.body_length() -1] = '\0';
+		move(uni_message, 0);
+	//if(read_msg_.body()[read_msg_.body_length()-1]==0)
+
+  		for(int i =0 ; i<10;i++){	    
+		printw("%c",(read_msg_.body()[i]));
+                }
+                for(int i =10 ; i<read_msg_.body_length();i++){	    
+		printw("%c",(read_msg_.body()[i])+enc);
+
+                }
+                printw(" %s \n",asctime(localtime(&ltime)));
+                
             refresh(); 
   
              werase(twin);
@@ -159,15 +175,7 @@ int main(int argc, char* argv[])
       std::cerr << "Usage: chat_client <host> <port>\n";
       return 1;
     }
-          asio::io_context io_context;
-
-    tcp::resolver resolver(io_context);
-    auto endpoints = resolver.resolve(argv[1], argv[2]);
-    chat_client c(io_context, endpoints);
-
-    std::thread t([&io_context](){ io_context.run(); });
-
-    char line[chat_message::max_body_length + 1];
+          
 //
 
     initscr();
@@ -176,7 +184,7 @@ int main(int argc, char* argv[])
     int st_x = 40;
     int st_y = 20;
    
-    nickname_label: 
+     
     WINDOW * nic_win = newwin(3, 40, st_y, st_x);
     box(nic_win,0,0);
     refresh();
@@ -184,7 +192,19 @@ int main(int argc, char* argv[])
     move(21,41);
     printw("nickname:");
     getstr(nickname);
-    
+//
+  
+asio::io_context io_context;
+
+    tcp::resolver resolver(io_context);
+    auto endpoints = resolver.resolve(argv[1], argv[2]);
+    chat_client c(io_context, endpoints);
+
+    std::thread t([&io_context](){ io_context.run(); });
+
+    char line[chat_message::max_body_length + 1];
+  //  nickname_label:
+
     endwin();
     //wrefresh(nic_win);
     refresh();
@@ -206,12 +226,15 @@ int main(int argc, char* argv[])
     refresh();
     //wrefresh(text_Center);
     keypad(win,true);
-    string choices[10] = {"Create Chatroom","Block User","Decrypt Message","Delete Message","Attachment","Exit","Chatrooms List","LOBBY","Nick Name:","Send/Receive"};
+nickname_label:    
+string choices[10] = {"Create Chatroom","Encrypt","Decrypt","Delete Message","Attachment","Exit","Chatrooms List","LOBBY","Nick Name:","Send/Receive"};
     choices[8] = nickname;
     int choice;
     int highlight = 0;
     int i;
     int sendmessage = 0;
+    
+
     LOOP:
     while(1){
         for(i=0;i<10;i++){
@@ -351,56 +374,132 @@ int main(int argc, char* argv[])
 
     }
 
-
+    if(highlight==1){
+	if(enc==0)
+{
+        enc = 1;
+}
+else if (enc==1)
+{
+enc=0;
+}
+        goto LOOP;  
+     }
+    if(highlight==2){
+    char dm[20];
+    WINDOW *de_win;
+    de_win = newwin(10, 40, height - 18,width - 40 );
+    box(de_win,0,0);
+    refresh();
+    wrefresh(de_win);
+    move(height - 17,width - 39);
+    printw("Message to derypt:");
+    i =0 ;
+    int chk =0;
+    while(chk==0){
+    dm[i]= getch();
+   
+    		if(dm[i]=='\n'){
+		move(height - 16,width - 39);
+		 printw ("Decrypted message: ");
+		    for(i=0;i<strlen(dm);i++){
+			    printw("%c",dm[i]-1);
+			    }
+            
+    //werase(de_win);
+    //wrefresh(de_win);
+    getch();
+    
+     			chk = 1;
+goto LOOP;
+    		}
+ i++;
+    }   
+ 
+   
+    }
     if(highlight==5){
         endwin();
         return 0;
     }
 
     if(highlight==8){
+    //goto nickname_label;
+  
+    nic_win = newwin(3, 40, st_y, st_x);
+    box(nic_win,0,0);
+    refresh();
+    wrefresh(nic_win);
+    move(21,41);
+    printw("nickname:");
+    getstr(nickname);
+    werase(nic_win);
+    wrefresh(nic_win);
     goto nickname_label;
+
+    
     }
-    if(highlight == 9){
+  if(highlight == 9){
         sendmessage = 1;
         int message_number =0;
         int size=0;
         char message[500];
+        string copy_m;
+        char ch;
 
         i = 0;
+        int r;
         while(sendmessage == 1){
             i = 0;
             size = 0;
+            int space_count = 0;
+            copy_m = "";
+            move(height-2,21);
+          
+           while(1){
 
-            move(height-2,25);
-            getstr(message);
-            /*
-            while(1){
-             
-                message[i] = getch();
-                //if()
+                ch = getch();
 
-                if(message[i] == '\n'){
-                    //werase(twin);
-                    //WINDOW * twin = newwin(3, width-20, height-3, 20);
-                    //box(twin,0,0);
-                    //refresh();
-                    //wrefresh(twin);
+                if(ch == '\n'){
+                    werase(twin);
+                    WINDOW * twin = newwin(3, width-20, height-3, 20);
+                    box(twin,0,0);
+                    refresh();
+                    wrefresh(twin);
                     break;
                 }
-                if(message[i] == '~'){
+
+                else if(ch == '~'){
                     sendmessage = 0;
                     highlight = 0;
                     goto LOOP;
                 }
 
+                 else if(ch == ' '){
+                    space_count = i+1;
+
+                    copy_m = "";
+                }
+
+                else if(ch == ' '){
+                    space_count = i+1;
+
+                    copy_m = "";
+                }
+                message[i] = ch;
+                copy_m = copy_m + message[i];
+                spellcheck(copy_m,width,height);
+
                 i++;
                 size++;
-               refresh();
+                refresh();
             }
-*/
+
 if(message[0]=='!'){
 goto LOOP;
 }
+
+
 size = strlen(message);
 int nickname_length=strlen(nickname);
 for(i=0;i< nickname_length;i++){
@@ -480,4 +579,146 @@ line[i]='\0';
   }
 
   return 0;
+}
+//
+
+void spellcheck(string message,int width,int height){
+	FILE *fp1 = fopen("dict.txt","r");
+
+	int dict_line;
+	char dict_word[500];
+	int i = 0;
+	int j = 0;
+
+	if(fp1 == NULL){
+        printf("Can't open the file\n");
+        exit(1);
+	}
+
+    char temp2;
+
+    fscanf(fp1,"%d",&dict_line);
+
+    fscanf(fp1,"%c",&temp2);
+
+    char Dict_arr[dict_line][500];
+
+    while(fgets(dict_word,500,fp1) != NULL){
+            strcpy(Dict_arr[j],dict_word); //strcpy
+            j++;
+    }
+
+    int Min_arr[dict_line];
+    int editDist, minimum_ed;
+    int min_counter=0;
+    int k;
+
+        for(j=0;j<dict_line;j++){
+            editDist = edit_distance(message,Dict_arr[j]);
+            if(j==0){
+                minimum_ed = editDist;
+                Min_arr[min_counter]= j;
+                min_counter++;
+            }
+            else{
+                if (editDist == minimum_ed){
+                    Min_arr[min_counter]= j;
+                    min_counter++;
+                }
+
+                else if(editDist < minimum_ed){
+                    minimum_ed = editDist;
+                    min_counter = 0;
+                    Min_arr[min_counter]= j;
+                    min_counter++;
+                }
+            }
+
+
+        }
+        WINDOW * spell = newwin(3, width-20, height-5, 20);
+        box(spell,0,0);
+        refresh();
+        wrefresh(spell);
+        mvwprintw(spell, 1, 1, "Spell Check>> ");
+        wrefresh(spell);
+
+        for(k=0;k<min_counter;k++){
+            if(k==0){
+                mvwprintw(spell,1,15,Dict_arr[Min_arr[k]]);
+                wrefresh(spell);
+            }
+            if(k==1){
+                mvwprintw(spell,1,30,Dict_arr[Min_arr[k]]);
+                wrefresh(spell);
+            }
+            if(k==2){
+                mvwprintw(spell,1,45,Dict_arr[Min_arr[k]]);
+                wrefresh(spell);
+            }
+
+            if(k==3){
+                mvwprintw(spell,1,60,Dict_arr[Min_arr[k]]);
+                wrefresh(spell);
+            }
+        }
+    werase(spell);
+    fclose(fp1);
+
+}
+
+int edit_distance(string first_string, string second_string){
+    int i,j;
+    int len1 = first_string.size();
+    int len2 = second_string.size();
+    int arr[len1+1][len2+1];
+    int min;
+    for(i=0;i<=len1;i++){
+        for(j=0;j<=len2;j++){
+            if (i==0 && j==0){
+                arr[i][j] = 0;
+            }
+            else if(i==0 ){
+                arr[i][j] = arr[0][j-1]+1;
+            }
+            else if(j==0){
+                arr[i][j] = arr[i-1][0] +1;
+            }
+            else{
+                if(first_string[i-1] == second_string[j-1]){
+                    if(arr[i-1][j]+1 < arr[i][j-1]+1 && arr[i-1][j]+1 < arr[i-1][j-1]+0){
+                        min = arr[i-1][j]+1;
+                    }
+                    else if(arr[i-1][j]+1 > arr[i][j-1]+1 && arr[i][j-1]+1 < arr[i-1][j-1]+0){
+                        min = arr[i][j-1]+1;
+                    }
+                    else{
+                        min = arr[i-1][j-1]+0;
+                    }
+                }
+
+                if(first_string[i-1] != second_string[j-1]){
+                    if(arr[i-1][j]+1 < arr[i][j-1]+1 && arr[i-1][j]+1 < arr[i-1][j-1]+1){
+                        min = arr[i-1][j]+1;//top
+                    }
+                    else if(arr[i-1][j]+1 > arr[i][j-1]+1 && arr[i][j-1]+1 < arr[i-1][j-1]+1){
+                        min = arr[i][j-1]+1;//left
+                    }
+                    else{
+                        min = arr[i-1][j-1]+1;
+                    }
+                }
+                arr[i][j] = min;
+            }
+
+        }
+    }
+
+    for(i=0;i<=len1;i++){
+        for (j=0;j<=len2;j++){
+            if(i == len1 && j == len2){
+                return arr[i][j];
+            }
+        }
+    }
 }
