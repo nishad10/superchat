@@ -111,7 +111,7 @@ private:
 		printw("%c",(read_msg_.body()[i]));
                 }
                 for(int i =10 ; i<read_msg_.body_length();i++){	    
-		printw("%c",(read_msg_.body()[i])+enc);
+		printw("%c",(read_msg_.body()[i]));
 
                 }
                 printw(" %s \n",asctime(localtime(&ltime)));
@@ -250,7 +250,7 @@ string choices[10] = {"Create Chatroom","Encrypt","Decrypt","Delete Message","At
                 mvwprintw(win, 1, 1, choices[0].c_str());
             }
 
-            if(i==1){//block user
+            if(i==1){//Encrypt
                 WINDOW * win2 = newwin(3, 12, 0, 17);
                 box(win2,0,0);
                 refresh();
@@ -375,16 +375,25 @@ string choices[10] = {"Create Chatroom","Encrypt","Decrypt","Delete Message","At
     }
 
     if(highlight==1){
-	if(enc==0)
-{
-        enc = 1;
+	if(enc!=0){
+        enc = 0;
+        }
+else{
+        WINDOW *encr; 
+	encr = newwin(10, 40, height - 18,width - 40 );
+        box(encr,0,0);
+    	refresh();
+   	wrefresh(encr);
+    	move(height - 17,width - 39);
+    	printw("Enter a secret no:");
+        char encc = getch();    
+        enc =  encc - '0';
 }
-else if (enc==1)
-{
-enc=0;
-}
+
         goto LOOP;  
      }
+
+
     if(highlight==2){
     char dm[20];
     WINDOW *de_win;
@@ -393,9 +402,14 @@ enc=0;
     refresh();
     wrefresh(de_win);
     move(height - 17,width - 39);
-    printw("Message to derypt:");
+    
+    printw("Enter a secret no:");
+        char encc = getch();    
+        enc =  encc - '0';
     i =0 ;
     int chk =0;
+move(height - 16,width - 39);
+printw("Message to derypt:");
     while(chk==0){
     dm[i]= getch();
    
@@ -403,7 +417,7 @@ enc=0;
 		move(height - 16,width - 39);
 		 printw ("Decrypted message: ");
 		    for(i=0;i<strlen(dm);i++){
-			    printw("%c",dm[i]-1);
+			    printw("%c",dm[i]-enc);
 			    }
             
     //werase(de_win);
@@ -486,7 +500,7 @@ goto LOOP;
 
                     copy_m = "";
                 }
-                message[i] = ch;
+                message[i] = ch+enc;
                 copy_m = copy_m + message[i];
                 spellcheck(copy_m,width,height);
 
