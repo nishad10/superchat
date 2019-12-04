@@ -1,8 +1,29 @@
 # superchat
 
-Superchat for SE 
+Superchat is a text messaging application built for desktop.
 
-(Both client and server are missing spellCheck cpp and h files need to add them!)
+
+You can create chatrooms, Add people to chatrooms and collaborate activley through text messages.
+
+
+Features Include but not limited to:
+
+Login/Signup functionality,Spellcheck, history of previous messages, Room for 50 users and upto 10 chatrooms.
+
+Take a look at the documentation for a mockup, Requirements, Design, and Testing reports.
+
+
+# Documentation
+
+
+[Requirements](https://github.com/nishad10/superchat/blob/master/Requirements-1552250188000.pdf)
+
+
+[Design](https://github.com/nishad10/superchat/blob/master/Design.pdf)
+
+
+# Compile/Build
+
 
 To compile you need to only change the
 
@@ -10,14 +31,14 @@ CPPFLAGS=-I/Users/shiba/Desktop/asio-1.12.2/include
 
 line from the makefile, change the CPPFLAGS="..." to the directory where asio is located for you and go till include in asio so you can see the asio.hpp file.
 
-# Client
+## Client
 The client folder is for client side files.
 Go to the client folder and type make to compile all the files.
 
-# Server
+## Server
 The server folder is for server side files.
 Go to the server folder and type make to compile all the files.
 
-# Basefiles
+## Basefiles
 This contains all the .cpp and .h files except makefiles for both client and server.
 There is no real need for this folder, except for backup purposes.
