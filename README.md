@@ -1,4 +1,4 @@
-# superchat
+# Superchat
 
 Superchat is a text messaging application built for desktop.
 
@@ -16,11 +16,22 @@ Take a look at the documentation for a mockup, Requirements, Design, and Testing
 # Documentation
 
 
-[Requirements](https://github.com/nishad10/superchat/blob/master/Requirements-1552250188000.pdf)
+1-[Requirements](https://github.com/nishad10/superchat/blob/master/Requirements-1552250188000.pdf)
 
 
-[Design](https://github.com/nishad10/superchat/blob/master/Design.pdf)
+>A list of all features with detailed description.
 
+
+2-[Design](https://github.com/nishad10/superchat/blob/master/Design.pdf)
+
+
+>Includes a mockup of how the app looks like.
+
+
+3-[Testing](https://github.com/nishad10/superchat/blob/master/Testing%20Document.pdf)
+
+
+>Testing and final report based on what we were able to implement properly.
 
 # Compile/Build
 
